@@ -1,0 +1,40 @@
+name: soundstream
+
+services:
+  soundstream-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        USERNAME: ${USER}
+        UID: ${USER_ID}
+        GID: ${GROUP_ID}
+    container_name: SoundStream-dev
+    volumes:
+      - .:/home/${USER}/workspace
+      - ~/.ssh:/home/${USER}/.ssh:ro
+      # ── GUI (X11 + Wayland) ───────────────────────────────────────────────
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ${XDG_RUNTIME_DIR:-/run/user/1000}:/run/user/1000
+    devices:
+      # ── GPU passthrough (needed for MESA/EGL/DRI) ─────────────────────────
+      - /dev/dri:/dev/dri
+    environment:
+      # Locale — Qt requires UTF-8
+      - LANG=C.UTF-8
+      - LC_ALL=C.UTF-8
+      # X11
+      - DISPLAY=${DISPLAY}
+      - XAUTHORITY=/root/.Xauthority
+      # Wayland
+      - WAYLAND_DISPLAY=${WAYLAND_DISPLAY}
+      - XDG_RUNTIME_DIR=/run/user/1000
+      # Let Qt pick Wayland, fall back to X11
+      - QT_QPA_PLATFORM=wayland;xcb
+      # PipeWire: point the client at the host socket
+      - PIPEWIRE_REMOTE=/run/user/1000/pipewire-0
+    working_dir: /home/${USER}/workspace
+    command: sleep infinity
+    hostname: SoundStream-dev
+    ipc: host
+    restart: "no"

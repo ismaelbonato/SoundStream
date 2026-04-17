@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=SoundStream
+GenericName=PipeWire Patchbay
+Comment=Visualise and edit the PipeWire audio graph
+Exec=soundstream %U
+Icon=audio-x-generic
+Terminal=false
+Type=Application
+Categories=Qt;KDE;AudioVideo;Audio;
+Keywords=pipewire;audio;patchbay;routing;

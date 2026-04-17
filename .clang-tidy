@@ -1,0 +1,40 @@
+Checks: >
+  -*,
+  bugprone-*,
+  performance-*,
+  readability-*,
+  modernize-*,
+  clang-analyzer-*,
+
+  # Disable noisy or conflicting ones for Qt/KDE
+  -modernize-use-trailing-return-type,
+  -readability-magic-numbers,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -readability-identifier-naming,
+  -bugprone-easily-swappable-parameters
+  -readability-identifier-length
+
+WarningsAsErrors: ''
+
+HeaderFilterRegex: '.*'
+
+#AnalyzeTemporaryDtors: false
+
+FormatStyle: file
+
+CheckOptions:
+  # Modernize
+  - key: modernize-use-nullptr.NullMacros
+    value: 'NULL'
+
+  # Readability
+  - key: readability-implicit-bool-conversion.AllowIntegerConditions
+    value: '1'
+
+  # Performance
+  - key: performance-unnecessary-value-param.AllowedTypes
+    value: 'QString;QByteArray'
+
+  # Qt-friendly tweaks
+  - key: modernize-pass-by-value.IncludeStyle
+    value: llvm

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.kde.soundstream</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>SoundStream</name>
+  <summary>PipeWire patchbay for KDE Plasma</summary>
+  <description>
+    <p>
+      SoundStream lets you visualise the live PipeWire audio graph and
+      connect or disconnect ports with a simple drag-and-drop interface,
+      all in a native Kirigami UI.
+    </p>
+  </description>
+  <url type="homepage">https://invent.kde.org/soundstream</url>
+  <categories>
+    <category>AudioVideo</category>
+    <category>Audio</category>
+  </categories>
+  <provides>
+    <binary>soundstream</binary>
+  </provides>
+  <releases>
+    <release version="0.1.0" date="2026-04-03"/>
+  </releases>
+</component>
