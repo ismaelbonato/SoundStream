@@ -68,6 +68,8 @@ private Q_SLOTS:
     void dragOutputToInputEmitsLinkCreateRequested();
     void dragNodeChangesPosition();
     void draggedNodeStaysAboveOverlappingNodes();
+    void clickingInputSelectsPort();
+    void clickingOutputSelectsPortAndKeepsDragToLinkAvailable();
     void deleteKeyOnSelectedPortEmitsLinkDestroyRequested();
     void nodeResizesWhenNameIsLong();
     void nodeResizesForWidePortItems();
@@ -225,6 +227,103 @@ void PatchbaySceneInteractionTest::draggedNodeStaysAboveOverlappingNodes()
                    dragEnd,
                    Qt::LeftButton,
                    Qt::NoButton);
+}
+
+void PatchbaySceneInteractionTest::clickingInputSelectsPort()
+{
+    PatchbayModel model;
+    PatchbayScene scene;
+    scene.setModel(&model);
+
+    model.notifyNodeAdded(NodeData{.id = 1,
+                                   .name = std::string("Sink"),
+                                   .mediaClass = std::string("Audio/Sink"),
+                                   .iconName = std::string("audio-card")});
+    model.notifyPortAdded(PortData{.id = 59,
+                                   .nodeId = 1,
+                                   .name = std::string("in"),
+                                   .direction = std::string("in"),
+                                   .mediaType = std::string("audio")});
+
+    auto portOpt = findPort(scene, 59);
+    QVERIFY(portOpt.has_value());
+
+    PortItem &portRef = ref(portOpt);
+    const QPointF clickPos = portRef.mapToScene(portRef.boundingRect().center());
+
+    sendMouseEvent(scene,
+                   QEvent::GraphicsSceneMousePress,
+                   clickPos,
+                   Qt::LeftButton,
+                   Qt::LeftButton);
+    sendMouseEvent(scene,
+                   QEvent::GraphicsSceneMouseRelease,
+                   clickPos,
+                   Qt::LeftButton,
+                   Qt::NoButton);
+
+    QVERIFY(portRef.isSelected());
+}
+
+void PatchbaySceneInteractionTest::
+    clickingOutputSelectsPortAndKeepsDragToLinkAvailable()
+{
+    PatchbayModel model;
+    PatchbayScene scene;
+    scene.setModel(&model);
+
+    model.notifyNodeAdded(
+        NodeData{.id = 1,
+                 .name = std::string("Source"),
+                 .mediaClass = std::string("Audio/Source"),
+                 .iconName = std::string("audio-input-microphone")});
+    model.notifyNodeAdded(NodeData{.id = 2,
+                                   .name = std::string("Sink"),
+                                   .mediaClass = std::string("Audio/Sink"),
+                                   .iconName = std::string("audio-card")});
+    model.notifyPortAdded(PortData{.id = 132,
+                                   .nodeId = 1,
+                                   .name = std::string("out"),
+                                   .direction = std::string("out"),
+                                   .mediaType = std::string("audio")});
+    model.notifyPortAdded(PortData{.id = 59,
+                                   .nodeId = 2,
+                                   .name = std::string("in"),
+                                   .direction = std::string("in"),
+                                   .mediaType = std::string("audio")});
+
+    auto outPortOpt = findPort(scene, 132);
+    auto inPortOpt = findPort(scene, 59);
+    QVERIFY(outPortOpt.has_value());
+    QVERIFY(inPortOpt.has_value());
+
+    PortItem &outRef = ref(outPortOpt);
+    PortItem &inRef = ref(inPortOpt);
+
+    QSignalSpy spy(&scene, &PatchbayScene::linkCreateRequested);
+
+    const QPointF from = outRef.mapToScene(outRef.boundingRect().center());
+    const QPointF to = inRef.mapToScene(inRef.boundingRect().center());
+
+    sendMouseEvent(scene,
+                   QEvent::GraphicsSceneMousePress,
+                   from,
+                   Qt::LeftButton,
+                   Qt::LeftButton);
+    QVERIFY(outRef.isSelected());
+
+    sendMouseEvent(scene,
+                   QEvent::GraphicsSceneMouseMove,
+                   to,
+                   Qt::NoButton,
+                   Qt::LeftButton);
+    sendMouseEvent(scene,
+                   QEvent::GraphicsSceneMouseRelease,
+                   to,
+                   Qt::LeftButton,
+                   Qt::NoButton);
+
+    QCOMPARE(spy.count(), 1);
 }
 
 void PatchbaySceneInteractionTest::

@@ -61,6 +61,11 @@ void PatchbayView::setConnected(bool connected)
     Q_EMIT connectedChanged();
 }
 
+void PatchbayView::setZoom(qreal zoom)
+{
+    _setZoomAround(zoom, QPointF(width() / 2.0, height() / 2.0));
+}
+
 // ── Invokables ─────────────────────────────────────────────────────────────
 
 void PatchbayView::resetLayout()
@@ -72,7 +77,32 @@ void PatchbayView::resetLayout()
 void PatchbayView::resetView()
 {
     offset = {0, 0};
+    const bool zoomWasChanged = !qFuzzyCompare(scale, 1.0);
     scale = 1.0;
+    _updateSceneRect();
+    update();
+    if (zoomWasChanged) {
+        Q_EMIT zoomChanged();
+    }
+}
+
+void PatchbayView::zoomIn()
+{
+    setZoom(scale * 1.12);
+}
+
+void PatchbayView::zoomOut()
+{
+    setZoom(scale / 1.12);
+}
+
+void PatchbayView::centerView()
+{
+    const QRectF itemBounds = scene.itemsBoundingRect();
+    const QPointF sceneCenter = itemBounds.isValid() && !itemBounds.isEmpty()
+                                    ? itemBounds.center()
+                                    : scene.sceneRect().center();
+    offset = QPointF(width() / 2.0, height() / 2.0) - sceneCenter * scale;
     update();
 }
 
@@ -98,10 +128,7 @@ void PatchbayView::geometryChange(const QRectF &newGeometry,
                                   const QRectF &oldGeometry)
 {
     QQuickPaintedItem::geometryChange(newGeometry, oldGeometry);
-    scene.setSceneRect(0,
-                       0,
-                       qMax(newGeometry.width() / scale * 4, 4000.0),
-                       qMax(newGeometry.height() / scale * 4, 4000.0));
+    _updateSceneRect();
     update();
 }
 
@@ -112,19 +139,37 @@ auto PatchbayView::_toScene(QPointF itemPos) const -> QPointF
     return (itemPos - offset) / scale;
 }
 
+void PatchbayView::_setZoomAround(qreal zoom, QPointF anchor)
+{
+    const qreal newScale = qBound(kMinScale, zoom, kMaxScale);
+    if (qFuzzyCompare(scale, newScale)) {
+        return;
+    }
+
+    const qreal ratio = newScale / scale;
+    offset = anchor - ratio * (anchor - offset);
+    scale = newScale;
+    _updateSceneRect();
+    update();
+    Q_EMIT zoomChanged();
+}
+
+void PatchbayView::_updateSceneRect()
+{
+    scene.setSceneRect(0,
+                       0,
+                       qMax(width() / scale * 4, 4000.0),
+                       qMax(height() / scale * 4, 4000.0));
+}
+
 // ── Mouse events ───────────────────────────────────────────────────────────
 
 void PatchbayView::wheelEvent(QWheelEvent *event)
 {
     if ((event->modifiers() & Qt::ControlModifier) != 0) {
         // Zoom centred under the cursor
-        QPointF cursor = event->position();
-        qreal factor = event->angleDelta().y() > 0 ? 1.12 : (1.0 / 1.12);
-        qreal newScale = qBound(kMinScale, scale * factor, kMaxScale);
-        qreal ratio = newScale / scale;
-        offset = cursor - ratio * (cursor - offset);
-        scale = newScale;
-        update();
+        const qreal factor = event->angleDelta().y() > 0 ? 1.12 : (1.0 / 1.12);
+        _setZoomAround(scale * factor, event->position());
         event->accept();
     } else {
         // Pan — one wheel step (120 units) = ~60px, natural scroll direction

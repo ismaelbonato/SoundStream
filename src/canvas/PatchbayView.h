@@ -21,6 +21,9 @@ class PatchbayView : public QQuickPaintedItem
 
     Q_PROPERTY(bool connected READ connected WRITE setConnected NOTIFY
                    connectedChanged)
+    Q_PROPERTY(qreal zoom READ zoom WRITE setZoom NOTIFY zoomChanged)
+    Q_PROPERTY(qreal minimumZoom READ minimumZoom CONSTANT)
+    Q_PROPERTY(qreal maximumZoom READ maximumZoom CONSTANT)
 
 public:
     explicit PatchbayView(QQuickItem *parent = nullptr);
@@ -29,9 +32,24 @@ public:
 
     [[nodiscard]] auto connected() const -> bool { return isConnected; }
     void setConnected(bool connected);
+    [[nodiscard]] auto zoom() const -> qreal { return scale; }
+    void setZoom(qreal zoom);
+    // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
+    [[nodiscard]] auto minimumZoom() const -> qreal
+    {
+        return kMinScale;
+    }
+    // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
+    [[nodiscard]] auto maximumZoom() const -> qreal
+    {
+        return kMaxScale;
+    }
 
     Q_INVOKABLE void resetLayout();
     Q_INVOKABLE void resetView();
+    Q_INVOKABLE void zoomIn();
+    Q_INVOKABLE void zoomOut();
+    Q_INVOKABLE void centerView();
 
     // QQuickPaintedItem
     void paint(QPainter *painter) override;
@@ -39,6 +57,7 @@ public:
 Q_SIGNALS:
     void nodeActivated(quint32 nodeId);
     void connectedChanged();
+    void zoomChanged();
     void linkCreateRequested(quint32 outputPortId, quint32 inputPortId);
     void linkDestroyRequested(quint32 linkId);
 
@@ -54,6 +73,8 @@ protected:
 private:
     // Convert a QQuickItem mouse-event position to scene coordinates.
     auto _toScene(QPointF itemPos) const -> QPointF;
+    void _setZoomAround(qreal zoom, QPointF anchor);
+    void _updateSceneRect();
 
     PatchbayScene scene;
 

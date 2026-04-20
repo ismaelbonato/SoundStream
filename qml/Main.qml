@@ -1,5 +1,7 @@
 // Main.qml – Kirigami ApplicationWindow
 import QtQuick
+import QtQuick.Controls as QQC2
+import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import org.kde.soundstream
 
@@ -52,6 +54,84 @@ Kirigami.ApplicationWindow {
 
             onNodeActivated: (nodeId) => {
                 // Future: open effect drawer for nodeId
+            }
+        }
+
+        Rectangle {
+            id: zoomToolbox
+            anchors {
+                left: parent.left
+                bottom: parent.bottom
+                leftMargin: 12
+                bottomMargin: 12
+            }
+            z: 20
+            radius: 8
+            color: "#AA1B1E22"
+            border.color: "#55FFFFFF"
+            border.width: 1
+
+            implicitWidth: zoomToolBar.implicitWidth + 16
+            implicitHeight: zoomToolBar.implicitHeight + 14
+
+            Kirigami.ActionToolBar {
+                id: zoomToolBar
+                anchors.centerIn: parent
+                flat: true
+                actions: [
+                    Kirigami.Action {
+                        icon.name: "zoom-out"
+                        text: i18n("Zoom Out")
+                        tooltip: text
+                        enabled: patchbay.zoom > patchbay.minimumZoom
+                        displayHint: Kirigami.DisplayHint.IconOnly
+                                     | Kirigami.DisplayHint.KeepVisible
+                        onTriggered: patchbay.zoomOut()
+                    },
+                    Kirigami.Action {
+                        text: i18n("Zoom")
+                        displayHint: Kirigami.DisplayHint.KeepVisible
+                        displayComponent: QQC2.Slider {
+                            from: patchbay.minimumZoom
+                            to: patchbay.maximumZoom
+                            value: patchbay.zoom
+                            live: true
+                            Layout.preferredWidth: 180
+                            onMoved: patchbay.zoom = value
+                            QQC2.ToolTip.text: i18n("%1%", Math.round(value * 100))
+                            QQC2.ToolTip.visible: pressed
+                        }
+                    },
+                    Kirigami.Action {
+                        text: i18n("Zoom Level")
+                        displayHint: Kirigami.DisplayHint.KeepVisible
+                        displayComponent: Text {
+                            width: 44
+                            horizontalAlignment: Text.AlignRight
+                            verticalAlignment: Text.AlignVCenter
+                            text: i18n("%1%", Math.round(patchbay.zoom * 100))
+                            color: "#E8EDF2"
+                            font.pixelSize: 12
+                        }
+                    },
+                    Kirigami.Action {
+                        icon.name: "zoom-in"
+                        text: i18n("Zoom In")
+                        tooltip: text
+                        enabled: patchbay.zoom < patchbay.maximumZoom
+                        displayHint: Kirigami.DisplayHint.IconOnly
+                                     | Kirigami.DisplayHint.KeepVisible
+                        onTriggered: patchbay.zoomIn()
+                    },
+                    Kirigami.Action {
+                        icon.name: "zoom-fit-best"
+                        text: i18n("Center")
+                        tooltip: text
+                        displayHint: Kirigami.DisplayHint.IconOnly
+                                     | Kirigami.DisplayHint.KeepVisible
+                        onTriggered: patchbay.centerView()
+                    }
+                ]
             }
         }
 

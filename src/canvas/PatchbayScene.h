@@ -57,6 +57,7 @@ private:
     auto _createAndWireLinkItem(const LinkData &link)
         -> std::unique_ptr<LinkItem>;
     auto _nextRowForNodeColumn(const QString &mediaClass) const -> int;
+    void _selectPort(PortItem &port, Qt::KeyboardModifiers modifiers);
     void _removePortFromAllNodes(quint32 portId);
 
     // Slots/handlers for PatchbayModel signals.

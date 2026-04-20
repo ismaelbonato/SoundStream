@@ -2,12 +2,14 @@
 #include "PortItem.h"
 #include "NodeItem.h"
 
+#include <QApplication>
 #include <QFont>
 #include <QGraphicsSceneContextMenuEvent>
 #include <QGraphicsTextItem>
 #include <QMenu>
 #include <QPainter>
 #include <QPainterPath>
+#include <QPalette>
 #include <QStyleOptionGraphicsItem>
 
 namespace {
@@ -116,10 +118,14 @@ void PortItem::paint(QPainter *painter,
 
     const QRectF rect = chipPath.boundingRect();
     const QColor base = background();
+    const bool selected = isSelected();
+    const QColor border = selected
+                              ? QApplication::palette().color(QPalette::Highlight)
+                              : base.darker(150);
 
     // Gradient fill using Item helper
     painter->setBrush(gradientBrush(rect));
-    painter->setPen(QPen(base.darker(150), 1.0));
+    painter->setPen(QPen(border, selected ? 2.0 : 1.0));
     painter->drawPath(chipPath);
 }
 
@@ -142,6 +148,6 @@ void PortItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
         QStringLiteral("Disconnect all links"));
 
     if (menu.exec(event->screenPos()) == disconnectAct) {
-        Q_EMIT disconnectRequested(itemData.id);
+        Q_EMIT this->disconnectRequested(itemData.id);
     }
 }

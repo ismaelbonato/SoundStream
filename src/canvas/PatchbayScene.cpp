@@ -163,6 +163,17 @@ auto PatchbayScene::_nextRowForNodeColumn(const QString &mediaClass) const
     return row;
 }
 
+void PatchbayScene::_selectPort(PortItem &port,
+                                Qt::KeyboardModifiers modifiers)
+{
+    if ((modifiers & Qt::ControlModifier) != 0) {
+        port.setSelected(!port.isSelected());
+    } else {
+        clearSelection();
+        port.setSelected(true);
+    }
+}
+
 void PatchbayScene::_removePortFromAllNodes(quint32 portId)
 {
     // NodeItem::removePort handles item destruction.
@@ -372,15 +383,20 @@ void PatchbayScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton) {
         auto *item = itemAt(event->scenePos(), QTransform());
-        if (const auto *port = portFromItem(item)) {
+        if (auto *port = portFromItem(item)) {
+            _selectPort(*port, event->modifiers());
+
             // Only output ports start a drag
-            if (port->direction() == QLatin1String("out")) {
-                dragSourcePort = const_cast<PortItem *>(port);
+            if (port->direction() == QLatin1String("out")
+                && (event->modifiers() & Qt::ControlModifier) == 0) {
+                dragSourcePort = port;
                 dragCurrentPos = event->scenePos();
                 draggingLink = true;
-                event->accept();
-                return;
             }
+
+            update();
+            event->accept();
+            return;
         }
     }
     QGraphicsScene::mousePressEvent(event);
