@@ -60,6 +60,26 @@ add_subdirectory(pipewire)
 
 set(SOUNDSTREAM_QML_SOURCES
     ../../qml/Main.qml
+    ../../qml/MediaLegend.qml
+    ../../qml/PatchbayPage.qml
+    ../../qml/PipeWireStatusBanner.qml
+    ../../qml/ZoomToolbox.qml
+)
+
+set_source_files_properties(../../qml/Main.qml
+    PROPERTIES QT_RESOURCE_ALIAS qml/Main.qml
+)
+set_source_files_properties(../../qml/MediaLegend.qml
+    PROPERTIES QT_RESOURCE_ALIAS qml/MediaLegend.qml
+)
+set_source_files_properties(../../qml/PatchbayPage.qml
+    PROPERTIES QT_RESOURCE_ALIAS qml/PatchbayPage.qml
+)
+set_source_files_properties(../../qml/PipeWireStatusBanner.qml
+    PROPERTIES QT_RESOURCE_ALIAS qml/PipeWireStatusBanner.qml
+)
+set_source_files_properties(../../qml/ZoomToolbox.qml
+    PROPERTIES QT_RESOURCE_ALIAS qml/ZoomToolbox.qml
 )
 
 qt_policy(SET QTP0004 NEW)

@@ -10,6 +10,20 @@
 #include <QStyleOptionGraphicsItem>
 #include <qcontainerfwd.h>
 
+namespace {
+QColor mixColor(const QColor &base, const QColor &overlay, qreal overlayAmount)
+{
+    const qreal baseAmount = 1.0 - overlayAmount;
+    return QColor::fromRgb(qRound((base.red() * baseAmount)
+                                  + (overlay.red() * overlayAmount)),
+                           qRound((base.green() * baseAmount)
+                                  + (overlay.green() * overlayAmount)),
+                           qRound((base.blue() * baseAmount)
+                                  + (overlay.blue() * overlayAmount)),
+                           base.alpha());
+}
+} // namespace
+
 NodeItem::NodeItem(const NodeData &itemData, QGraphicsItem *parent)
     : Item(parent)
     , itemData(itemData)
@@ -172,7 +186,7 @@ void NodeItem::paint(QPainter *painter,
     painter->setClipping(false);
 
     // Node name
-    painter->setPen(Qt::white);
+    painter->setPen(QApplication::palette().color(QPalette::HighlightedText));
     QFont font = painter->font();
     font.setBold(true);
     font.setPointSizeF(font.pointSizeF() * 0.75);
@@ -189,7 +203,7 @@ void NodeItem::paint(QPainter *painter,
                                                         int(textRect.width())));
 
     // Icon placeholder — small white dot on header left
-    painter->setBrush(Qt::white);
+    painter->setBrush(QApplication::palette().color(QPalette::HighlightedText));
     painter->setPen(Qt::NoPen);
     painter->drawEllipse(QPointF(localRect.x() + 14,
                                  localRect.y() + (kHeaderH / 2)),
@@ -199,16 +213,21 @@ void NodeItem::paint(QPainter *painter,
 
 auto NodeItem::_classColor(const QString &mediaClass) -> QColor
 {
+    const QPalette &palette = QApplication::palette();
+    const QColor highlight = palette.color(QPalette::Highlight);
+    const QColor link = palette.color(QPalette::Link);
+    const QColor text = palette.color(QPalette::Text);
+
     if (mediaClass.contains(QLatin1String("Sink"), Qt::CaseInsensitive)) {
-        return {0x3a, 0x7e, 0xbf};
+        return highlight;
     }
     if (mediaClass.contains(QLatin1String("Source"), Qt::CaseInsensitive)) {
-        return {0x3a, 0xbf, 0x6e};
+        return link;
     }
     if (mediaClass.contains(QLatin1String("Duplex"), Qt::CaseInsensitive)) {
-        return {0x7e, 0x3a, 0xbf};
+        return mixColor(link, highlight, 0.45);
     }
-    return QColor(0x5a, 0x5a, 0x7a);
+    return mixColor(palette.color(QPalette::Mid), text, 0.25);
 }
 
 // ── Events ─────────────────────────────────────────────────────────────────

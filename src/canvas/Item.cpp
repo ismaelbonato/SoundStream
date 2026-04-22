@@ -1,11 +1,15 @@
 // canvas/Item.cpp
 #include "Item.h"
 
+#include <QApplication>
 #include <QPainter>
+#include <QPalette>
 #include <QPen>
 
 Item::Item(QGraphicsItem *parent)
     : QGraphicsObject(parent)
+    , foregroundColor(QApplication::palette().color(QPalette::Text))
+    , backgroundColor(QApplication::palette().color(QPalette::Base))
 {
 }
 

@@ -332,8 +332,10 @@ void PatchbayScene::drawBackground(QPainter *painter, const QRectF &rect)
 {
     QGraphicsScene::drawBackground(painter, rect);
 
+    QColor gridColor = QApplication::palette().color(QPalette::Mid);
+    gridColor.setAlpha(45);
     painter->setPen(Qt::NoPen);
-    painter->setBrush(QColor(128, 128, 128, 45));
+    painter->setBrush(gridColor);
 
     // Only draw dots inside the visible rect — scene handles clipping.
     qreal left = qFloor(rect.left() / kGridStep) * kGridStep;

@@ -64,6 +64,6 @@ public:
 
 protected:
     // Sensible defaults — subclasses call setForeground/setBackground in ctors.
-    QColor foregroundColor{0xee, 0xee, 0xee}; // near-white text
-    QColor backgroundColor{0x3a, 0x7e, 0xbf}; // neutral blue
+    QColor foregroundColor;
+    QColor backgroundColor;
 };

@@ -13,16 +13,33 @@
 #include <QStyleOptionGraphicsItem>
 
 namespace {
+QColor mixColor(const QColor &base, const QColor &overlay, qreal overlayAmount)
+{
+    const qreal baseAmount = 1.0 - overlayAmount;
+    return QColor::fromRgb(qRound((base.red() * baseAmount)
+                                  + (overlay.red() * overlayAmount)),
+                           qRound((base.green() * baseAmount)
+                                  + (overlay.green() * overlayAmount)),
+                           qRound((base.blue() * baseAmount)
+                                  + (overlay.blue() * overlayAmount)),
+                           base.alpha());
+}
+
 QColor mediaBaseColor(const QString &mediaType,
                       const QString &portName,
                       const QString &direction)
 {
     const QString hint = (mediaType + QLatin1Char(' ') + portName).toLower();
+    const QPalette &palette = QApplication::palette();
+    const QColor highlight = palette.color(QPalette::Highlight);
+    const QColor link = palette.color(QPalette::Link);
+    const QColor text = palette.color(QPalette::Text);
+    const QColor base = palette.color(QPalette::Base);
 
     // Keep MIDI/control ports visually distinct.
     if (hint.contains(QLatin1String("midi"))
         || hint.contains(QLatin1String("control"))) {
-        return QColor(0xaf, 0x5d, 0xff);
+        return mixColor(link, highlight, 0.45);
     }
 
     if (hint.contains(QLatin1String("video"))
@@ -31,15 +48,12 @@ QColor mediaBaseColor(const QString &mediaType,
         || hint.contains(QLatin1String("video4linux"))
         || hint.contains(QLatin1String("camera"))
         || hint.contains(QLatin1String("webcam"))) {
-        return QColor(0xff, 0x9f, 0x43);
+        return mixColor(highlight, text, 0.35);
     }
 
     const bool isOut = (direction == QLatin1String("out"));
 
-    // Match node accent palette:
-    // - input  -> Sink blue
-    // - output -> Source green
-    return isOut ? QColor(0x3a, 0xbf, 0x6e) : QColor(0x3a, 0x7e, 0xbf);
+    return isOut ? link : mixColor(highlight, base, 0.2);
 }
 } // namespace
 
@@ -58,14 +72,14 @@ PortItem::PortItem(const PortData &itemData, NodeItem *parentNode)
                          QString::fromStdString(itemData.name),
                          QString::fromStdString(itemData.direction));
     setBackground(mediaColor);
-    setForeground(Qt::white);
+    setForeground(QApplication::palette().color(QPalette::HighlightedText));
 
     // Text child — label lives inside the chip
     textItem = new QGraphicsTextItem(this);
     QFont font = textItem->font();
     font.setPointSizeF(font.pointSizeF() * 0.75);
     textItem->setFont(font);
-    textItem->setDefaultTextColor(Qt::white);
+    textItem->setDefaultTextColor(foreground());
 
     QString label = QString::fromStdString(itemData.name).simplified();
     textItem->setPlainText(label);

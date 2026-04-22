@@ -10,22 +10,40 @@
 #include <QPalette>
 
 namespace {
+QColor mixColor(const QColor &base, const QColor &overlay, qreal overlayAmount)
+{
+    const qreal baseAmount = 1.0 - overlayAmount;
+    return QColor::fromRgb(qRound((base.red() * baseAmount)
+                                  + (overlay.red() * overlayAmount)),
+                           qRound((base.green() * baseAmount)
+                                  + (overlay.green() * overlayAmount)),
+                           qRound((base.blue() * baseAmount)
+                                  + (overlay.blue() * overlayAmount)),
+                           base.alpha());
+}
+
 QColor mediaBaseColor(const QString &mediaType)
 {
+    const QPalette &palette = QApplication::palette();
+    const QColor highlight = palette.color(QPalette::Highlight);
+    const QColor link = palette.color(QPalette::Link);
+    const QColor text = palette.color(QPalette::Text);
+    const QColor mid = palette.color(QPalette::Mid);
+
     if (mediaType.contains(QLatin1String("audio"), Qt::CaseInsensitive)) {
-        return QColor(0x3a, 0x9a, 0xff);
+        return highlight;
     }
     if (mediaType.contains(QLatin1String("midi"), Qt::CaseInsensitive)) {
-        return QColor(0xaf, 0x5d, 0xff);
+        return mixColor(link, highlight, 0.45);
     }
     if (mediaType.contains(QLatin1String("video"), Qt::CaseInsensitive)
         || mediaType.contains(QLatin1String("image"), Qt::CaseInsensitive)
         || mediaType.contains(QLatin1String("v4l2"), Qt::CaseInsensitive)
         || mediaType.contains(QLatin1String("video4linux"), Qt::CaseInsensitive)
         || mediaType.contains(QLatin1String("camera"), Qt::CaseInsensitive)) {
-        return QColor(0xff, 0x9f, 0x43);
+        return mixColor(highlight, text, 0.35);
     }
-    return QColor(0x7a, 0x8a, 0x9a);
+    return mid;
 }
 } // namespace
 

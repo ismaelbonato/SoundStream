@@ -56,7 +56,7 @@ if(BUILD_TESTING)
                 COMMENT "Running test suite with coverage instrumentation"
         )
 endif()
-
+#todo: fix the names of the tests, they should describe the folder 
 # ── Install assets ────────────────────────────────────────────────────────────
 install(FILES assets/org.kde.soundstream.desktop
         DESTINATION ${KDE_INSTALL_APPDIR})
